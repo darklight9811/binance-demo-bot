@@ -2,7 +2,7 @@
 import request from "./signedRequest.ts";
 
 // Interfaces
-import { newTrade } from "./interfaces/trades.ts";
+import { NewTradeInterface } from "./interfaces/trades.ts";
 import { iAggregateTrades } from "./interfaces/market.ts";
 
 /**
@@ -17,14 +17,14 @@ import { iAggregateTrades } from "./interfaces/market.ts";
 * @param {string} symbol
 * @param {string} side
 * @param {string} type
-* @param {newTrade} options?
-* @returns {Promise<Object>}
+* @param {NewTradeInterface} options?
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function order (symbol : string, side : string, type : string, options? : newTrade) : Promise<Object> {
+export async function order (symbol : string, side : string, type : string, options? : NewTradeInterface) : Promise<Record<string, unknown>> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof NewTradeInterface]}`;
 	}
 
    return await request.post(`order?symbol=${symbol}&side=${side}&type=${type}${getoptions}`);
@@ -42,14 +42,14 @@ export async function order (symbol : string, side : string, type : string, opti
 * @param {string} symbol
 * @param {string} side
 * @param {string} type
-* @param {newTrade} options?
-* @returns {Promise<Object>}
+* @param {NewTradeInterface} options?
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function test (symbol : string, side : string, type : string, options? : newTrade) : Promise<Object> {
+export async function test (symbol : string, side : string, type : string, options? : NewTradeInterface) : Promise<Record<string, unknown>> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof NewTradeInterface]}`;
 	}
 
    return await request.post(`order/test?symbol=${symbol}&side=${side}&type=${type}${getoptions}`);
@@ -66,9 +66,9 @@ export async function test (symbol : string, side : string, type : string, optio
 * @function query
 * @param {string} symbol
 * @param {number} orderId
-* @returns {Promise<Object>}
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function query (symbol : string, orderId : number) : Promise<Object> {
+export async function query (symbol : string, orderId : number) : Promise<Record<string, unknown>> {
    return await request.get(`order/test?symbol=${symbol}&orderId=${orderId}`);
 }
 
@@ -83,9 +83,9 @@ export async function query (symbol : string, orderId : number) : Promise<Object
 * @function cancel
 * @param {string} symbol
 * @param {number} orderId
-* @returns {Promise<Object>}
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function cancel (symbol : string, orderId : number) : Promise<Object> {
+export async function cancel (symbol : string, orderId : number) : Promise<Record<string, unknown>> {
    return await request.delete(`order?symbol=${symbol}&orderId=${orderId}`);
 }
 
@@ -99,9 +99,9 @@ export async function cancel (symbol : string, orderId : number) : Promise<Objec
 * @async
 * @function cancelAll
 * @param {string} symbol
-* @returns {Promise<Object>}
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function cancelAll (symbol : string) : Promise<Object> {
+export async function cancelAll (symbol : string) : Promise<Record<string, unknown>> {
    return await request.delete(`order?symbol=${symbol}`);
 }
 
@@ -115,9 +115,9 @@ export async function cancelAll (symbol : string) : Promise<Object> {
 * @async
 * @function openOrders
 * @param {string} symbol?
-* @returns {Promise<Object>}
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function openOrders (symbol? : string) : Promise<Object> {
+export async function openOrders (symbol? : string) : Promise<Record<string, unknown>[]> {
    return await request.get(`openOrders${symbol ? `?symbol=${symbol}`:""}`);
 }
 
@@ -135,13 +135,13 @@ export async function openOrders (symbol? : string) : Promise<Object> {
 * @async
 * @function allOrders
 * @param {string} symbol
-* @returns {Promise<Object>}
+* @returns {Promise<Record<string, unknown>>}
 */
-export async function allOrders (symbol : string, options? : iAggregateTrades) : Promise<Object> {
+export async function allOrders (symbol : string, options? : iAggregateTrades) : Promise<Record<string, unknown>> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof iAggregateTrades]}`;
 	}
 
    return await request.get(`allOrders?symbol=${symbol}${getoptions}`);

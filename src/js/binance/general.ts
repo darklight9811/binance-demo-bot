@@ -1,6 +1,9 @@
 // Helpers
 import request from "../helpers/request.ts";
 
+// Interfaces
+import { ExchangeInfoInterface } from "./interfaces/general.ts";
+
 /**
  * Ping
  * 
@@ -36,11 +39,11 @@ export async function serverTime () : Promise<number> {
  * @function exchangeInfo
  * @returns Promise
  */
-export async function exchangeInfo (symbol? : string) : Promise<Object> {
-	const response = await request("exchangeInfo");
+export async function exchangeInfo <T extends string | undefined = undefined> (symbol? : T): Promise<T extends string ? ExchangeInfoInterface:ExchangeInfoInterface[]> {
+	const response = await request("exchangeInfo") as {symbols: ExchangeInfoInterface[]};
 
 	if (symbol)
-		return response.symbols.filter((value : any) => value.symbol === symbol)[0];
+		return response.symbols.find((value) => value.symbol === symbol) as ExchangeInfoInterface;
 	else
-		return response;
+		return response.symbols;
 }

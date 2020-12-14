@@ -2,10 +2,9 @@
 import request from "../helpers/request.ts";
 
 // Interfaces
-import { iAggregateTrades } from "./interfaces/market.ts";
-
-// Types
-import { interval } from "./types/market.ts";
+import { iAggregateTrades, OrderBookInterface, RecentTradesInterface } from "./interfaces/market.ts";
+import { AggregateInterface, CandleStickInterface } from "./interfaces/market.ts";
+import { AvgPriceInterface, TickerInterface, TickerBookInterface } from "./interfaces/market.ts";
 
 /**
  * Order book
@@ -20,7 +19,7 @@ import { interval } from "./types/market.ts";
  * @param  {number} limit? Default 100; max 5000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
  * @returns {Promise<Object>}
  */
-export async function orderBook (symbol : string, limit? : number) : Promise<Object> {
+export async function orderBook (symbol : string, limit? : number) : Promise<OrderBookInterface> {
 	return await request(`depth?symbol=${symbol}${limit !== undefined ? ("&limit=" + limit):""}`);
 }
 
@@ -37,7 +36,7 @@ export async function orderBook (symbol : string, limit? : number) : Promise<Obj
  * @param  {number} limit? Default 500; max 1000.
  * @returns {Promise<Object>}
  */
-export async function recentTrades (symbol : string, limit? : number) : Promise<Object> {
+export async function recentTrades (symbol : string, limit? : number) : Promise<RecentTradesInterface> {
 	return await request(`trades?symbol=${symbol}${limit !== undefined ? ("&limit=" + limit):""}`);
 }
 
@@ -58,11 +57,11 @@ export async function recentTrades (symbol : string, limit? : number) : Promise<
  * @param  {iAggregateTrades} options?
  * @returns {Promise<Object>}
  */
-export async function aggregateTrades (symbol : string, options : iAggregateTrades = {}) : Promise<Object> {
+export async function aggregateTrades (symbol : string, options : iAggregateTrades = {}) : Promise<AggregateInterface[]> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof iAggregateTrades]}`;
 	}
 
 	return await request(`aggTrades?symbol=${symbol}${getoptions}`);
@@ -84,14 +83,33 @@ export async function aggregateTrades (symbol : string, options : iAggregateTrad
  * @param  {iAggregateTrades} options?
  * @returns {Promise<Object>}
  */
-export async function candlesticks (symbol : string, interval : interval, options : iAggregateTrades = {}) : Promise<Object> {
+export async function candlesticks (symbol : string, interval : string, options : iAggregateTrades = {}) : Promise<CandleStickInterface[]> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof iAggregateTrades]}`;
 	}
 
-	return await request(`klines?symbol=${symbol}&interval=${interval}${getoptions}`);
+	const response = await request(`klines?symbol=${symbol}&interval=${interval}${getoptions}`);
+
+	return response.map((item: (string | number)[]) => ({
+		openTime: item[0],
+		open: item[1],
+		high: item[2],
+		low: item[3],
+	
+		closeTime: item[6],
+		close: item[4],
+	
+		volume: item[5],
+		quoteAssetVolume: item[7],
+		tradeQty: item[8],
+	
+		takerBuyBaseAssetVolume: item[9],
+		takerBuyQuoteAssetVolume: item[10],
+	
+		ignore: item[11],
+	}));
 }
 
 /**
@@ -106,7 +124,7 @@ export async function candlesticks (symbol : string, interval : interval, option
  * @param  {string} symbol 
  * @returns {Promise<Object>}
  */
-export async function avgPrice (symbol : string) : Promise<{mins: number, price: string}> {
+export async function avgPrice (symbol : string) : Promise<AvgPriceInterface> {
 	return await request(`avgPrice?symbol=${symbol}`);
 }
 
@@ -122,7 +140,7 @@ export async function avgPrice (symbol : string) : Promise<{mins: number, price:
  * @param  {string} symbol?
  * @returns {Promise<Object>}
  */
-export async function ticker (symbol? : string) : Promise<Object> {
+export async function ticker (symbol? : string) : Promise<TickerInterface> {
 	return await request(`ticker/24hr${symbol ? (`?symbol=${symbol}`):""}`);
 }
 
@@ -138,8 +156,9 @@ export async function ticker (symbol? : string) : Promise<Object> {
  * @param  {string} symbol?
  * @returns {Promise<Object>}
  */
-export async function tickerPrice (symbol? : string) : Promise<Object> {
-	return await request(`ticker/price${symbol ? (`?symbol=${symbol}`):""}`);
+export async function tickerPrice (symbol? : string) : Promise<string> {
+	const response = await request(`ticker/price${symbol ? (`?symbol=${symbol}`):""}`);
+	return response.price;
 }
 
 /**
@@ -154,6 +173,6 @@ export async function tickerPrice (symbol? : string) : Promise<Object> {
  * @param  {string} symbol?
  * @returns {Promise<Object>}
  */
-export async function tickerBook (symbol? : string) : Promise<Object> {
+export async function tickerBook (symbol? : string) : Promise<TickerBookInterface> {
 	return await request(`ticker/bookTicker${symbol ? (`?symbol=${symbol}`):""}`);
 }

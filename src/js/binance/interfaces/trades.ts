@@ -1,4 +1,4 @@
-export interface newTrade {
+export interface NewTradeInterface {
 	timeInForce? : string,
 	quantity? : number | string,
 	quoteOrderQty? : number,

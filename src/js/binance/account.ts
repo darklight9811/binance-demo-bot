@@ -3,7 +3,7 @@ import request from "./signedRequest.ts";
 
 // Interfaces
 import { iAggregateTrades } from "./interfaces/market.ts";
-import { AccountInterface } from "./interfaces/account.ts";
+import { AccountInterface, TradeInterface } from "./interfaces/account.ts";
 
 /**
 * Account information
@@ -43,11 +43,11 @@ export async function info () : Promise<AccountInterface> {
 * @param  {iAggregateTrades} options?
 * @returns {Promise<Object>}
 */
-export async function trades (symbol : string, options : iAggregateTrades = {}) : Promise<Object> {
+export async function trades (symbol : string, options : iAggregateTrades = {}) : Promise<TradeInterface[]> {
 	let getoptions = "";
 
-	for (const key in (options as Object)) {
-		getoptions += `&${key}=${(options as any)[key]}`;
+	for (const key in options) {
+		getoptions += `&${key}=${options[key as keyof iAggregateTrades]}`;
 	}
 
    return await request(`myTrades?symbol=${symbol}${getoptions}`);

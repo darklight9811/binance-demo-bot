@@ -16,10 +16,8 @@ import Logger from "../helpers/log.ts";
 let fee			: number;
 let options 	: iOptions;
 let canRun 					= true;
-let pairInfo	: any 		= {};
-let balance 	: any 		= {};
-let orders		: any 		= [];
 let cacheConsole: string[] 	= [];
+const balance 				= {} as Record<string, string>;
 
 // Display properties
 let totalOrdersClosed = 0;
@@ -40,11 +38,11 @@ async function updateBalance () {
 	// display balance
 	cacheConsole.push(`Your trading fee is current ${fee}%\n`);
 	cacheConsole.push(`\x1b[32m${firstPair}\x1b[37m is worth ${price.price} ${secondPair}%`);
-	cacheConsole.push(`You have ${balance[firstPair]} \x1b[32m${firstPair}\x1b[37m (worth: $${parseFloat(price.price) * balance[firstPair]} \x1b[32m${secondPair}\x1b[37m)\n`);
+	cacheConsole.push(`You have ${balance[firstPair]} \x1b[32m${firstPair}\x1b[37m (worth: $${parseFloat(price.price) * parseFloat(balance[firstPair])} \x1b[32m${secondPair}\x1b[37m)\n`);
 }
 
 async function updateOrders () {
-	orders = await openOrders(options.pair[0] + options.pair[1]);
+	const orders = await openOrders(options.pair[0] + options.pair[1]);
 
 	if (orders.length === 0) {
 		cacheConsole.push("No open orders at the moment");
@@ -56,13 +54,13 @@ async function updateOrders () {
 		if (options.closeOrdersTime) {
 			for (let i = 0; i < orders.length; i++) {
 				const order = orders[i];
-				const time 	= new Date(order.updateTime);
+				const time 	= new Date(order.updateTime as string);
 				const limit = time.getTime() + (options.closeOrdersTime * 60 * 60 * 1000);
 	
 				// close old order
 				if (limit < (new Date()).getTime()) {
 					Logger.general(`closing order {${order.orderId}}`);
-					await cancel(options.pair[0] + options.pair[1], order.orderId);
+					await cancel(options.pair[0] + options.pair[1], order.orderId as number);
 					roundCloseOrder++;
 				}
 			}
@@ -117,7 +115,6 @@ export async function run (_options : iOptions) {
 	// Start bot
 	console.log("Starting bot");
 	options 	= _options;
-	pairInfo 	= _pairInfo;
 	canRun 		= true;
 	await cycle();
 }
