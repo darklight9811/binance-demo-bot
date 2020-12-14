@@ -106,7 +106,7 @@ export async function candlesticks (symbol : string, interval : interval, option
  * @param  {string} symbol 
  * @returns {Promise<Object>}
  */
-export async function avgPrice (symbol : string) : Promise<Object> {
+export async function avgPrice (symbol : string) : Promise<{mins: number, price: string}> {
 	return await request(`avgPrice?symbol=${symbol}`);
 }
 

@@ -15,8 +15,16 @@ import { iAggregateTrades } from "./interfaces/market.ts";
 * @function info
 * @returns {Promise<Object>}
 */
-export async function info () : Promise<Object> {
-   return await request(`account`);
+export async function info () : Promise<any> {
+   const response = await request(`account`);
+
+   // format response
+	if (response.makerCommission) 	response.makerCommission 	/= 10000;
+	if (response.takerCommission) 	response.takerCommission 	/= 10000;
+	if (response.buyerComission) 	response.buyerComission 	/= 10000;
+	if (response.sellerComission) 	response.sellerComission 	/= 10000;
+
+	return response;
 }
 
 /**

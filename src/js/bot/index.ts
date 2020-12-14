@@ -6,11 +6,14 @@ import { info } 				from "../binance/account.ts";
 import * as wallet 				from "../binance/wallet.ts";
 import { exchangeInfo } 		from "../binance/general.ts";
 import { openOrders, cancel } 	from "../binance/trades.ts";
+import { avgPrice } 			from "../binance/market.ts";
 
 // Helpers
 import { format } from "../helpers/date.ts";
+import Logger from "../helpers/log.ts";
 
 // Properties
+let fee			: number;
 let options 	: iOptions;
 let canRun 		: boolean	= true;
 let pairInfo	: any 		= {};
@@ -18,16 +21,26 @@ let balance 	: any 		= {};
 let orders		: any 		= [];
 let cacheConsole: string[] 	= [];
 
+// Display properties
+let totalOrdersClosed = 0;
+
 // Methods
 async function updateBalance () {
+	const account					= await info();
 	const pairs 					= await wallet.balance(options.pair);
 	const [ firstPair, secondPair ] = options.pair;
+	const price						= await avgPrice(firstPair + secondPair);
 
+	fee = account.makerCommission + account.buyerCommission;
+
+	// update balance for later usage
 	balance[firstPair] 	= pairs[firstPair].free;
 	balance[secondPair] = pairs[secondPair].free;
 
 	// display balance
-	cacheConsole.push(`\x1b[32m${firstPair}\x1b[37m: ${balance[firstPair]} (worth: )`);
+	cacheConsole.push(`Your trading fee is current ${fee}%\n`);
+	cacheConsole.push(`\x1b[32m${firstPair}\x1b[37m is worth ${price.price} ${secondPair}%`);
+	cacheConsole.push(`You have ${balance[firstPair]} \x1b[32m${firstPair}\x1b[37m (worth: $${parseFloat(price.price) * balance[firstPair]} \x1b[32m${secondPair}\x1b[37m)\n`);
 }
 
 async function updateOrders () {
@@ -37,8 +50,9 @@ async function updateOrders () {
 		cacheConsole.push("No open orders at the moment");
 	}
 	else {
-		let ordersClosed = 0;
+		let roundCloseOrder = 0;
 
+		// only close orders if the config sets it
 		if (options.closeOrdersTime) {
 			for (let i = 0; i < orders.length; i++) {
 				const order = orders[i];
@@ -47,14 +61,19 @@ async function updateOrders () {
 	
 				// close old order
 				if (limit < (new Date()).getTime()) {
+					Logger.general(`closing order {${order.orderId}}`);
 					await cancel(options.pair[0] + options.pair[1], order.orderId);
-					ordersClosed += 1;
+					roundCloseOrder++;
 				}
 			}
 		}
 
-		cacheConsole.push(`${ordersClosed} orders were closed and ${orders.length - ordersClosed} were kept open`);
+		totalOrdersClosed += roundCloseOrder;
+
+		cacheConsole.push(`There are ${orders.length - roundCloseOrder} open orders, ${orders.length - totalOrdersClosed} were closed`);
 	}
+
+	console.log('\n');
 }
 
 async function cycle () {
