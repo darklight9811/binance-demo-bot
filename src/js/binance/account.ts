@@ -3,6 +3,7 @@ import request from "./signedRequest.ts";
 
 // Interfaces
 import { iAggregateTrades } from "./interfaces/market.ts";
+import { AccountInterface } from "./interfaces/account.ts";
 
 /**
 * Account information
@@ -15,13 +16,13 @@ import { iAggregateTrades } from "./interfaces/market.ts";
 * @function info
 * @returns {Promise<Object>}
 */
-export async function info () : Promise<any> {
+export async function info () : Promise<AccountInterface> {
    const response = await request(`account`);
 
    // format response
 	if (response.makerCommission) 	response.makerCommission 	/= 10000;
 	if (response.takerCommission) 	response.takerCommission 	/= 10000;
-	if (response.buyerComission) 	response.buyerComission 	/= 10000;
+	if (response.buyerCommission) 	response.buyerCommission 	/= 10000;
 	if (response.sellerComission) 	response.sellerComission 	/= 10000;
 
 	return response;

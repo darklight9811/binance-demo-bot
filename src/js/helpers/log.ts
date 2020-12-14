@@ -35,16 +35,14 @@ import { timestamp }	from "./string.ts";
 	private static async save (pathToSave : string, stringToSave : string) {
 		const encoder 	= new TextEncoder();
 		const text 		= encoder.encode(stringToSave + "\n");
-		const savePath	= join('logs', `${pathToSave}.log`);
+		const savePath	= join(Deno.cwd(), 'logs', `${pathToSave}.log`);
 
 		//Make sure the path exists
 		ensureDirSync(parse(savePath).dir);
 
-		console.log(parse(savePath).dir);
-
 		//Write to file
 		const file = Deno.openSync(savePath, { write:true, create:true, append:true });
-		Deno.writeAllSync(file, text);
+		await Deno.writeAll(file, text);
 		Deno.close(file.rid);
 	}
 }

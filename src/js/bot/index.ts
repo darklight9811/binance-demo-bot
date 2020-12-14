@@ -15,7 +15,7 @@ import Logger from "../helpers/log.ts";
 // Properties
 let fee			: number;
 let options 	: iOptions;
-let canRun 		: boolean	= true;
+let canRun 					= true;
 let pairInfo	: any 		= {};
 let balance 	: any 		= {};
 let orders		: any 		= [];
@@ -102,14 +102,14 @@ async function cycle () {
 // Export methods
 export async function run (_options : iOptions) {
 	// Validate user
-	if (!((await info()) as any).canTrade) {
+	if (!(await info()).canTrade) {
 		console.warn("Credentials are not valid");
 		return;
 	}
 
 	// Validate pair
 	const { pair } 			= _options;
-	const _pairInfo : any 	= await exchangeInfo(pair[0] + pair[1]);
+	const _pairInfo 		= await exchangeInfo(pair[0] + pair[1]);
 	if (!_pairInfo || !_pairInfo.isSpotTradingAllowed) {
 		console.warn(`${pair[1] + pair[0]} pair is not valid`);
 	}
