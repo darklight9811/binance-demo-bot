@@ -5,44 +5,34 @@ import { join, parse }		from "https://deno.land/std@0.80.0/path/mod.ts";
 // Helpers
 import { timestamp }	from "./string.ts";
 
-/*
- * Logger is responsible for saving txt files that register every event occurred
- * within catbot
- *
- */
- export default class Logger {
+// -------------------------------------------------
+// Helper methods
+// -------------------------------------------------
 
-    //-------------------------------------------------
-    // Event methods
-	//-------------------------------------------------
+async function save (pathToSave : string, stringToSave : string) {
+	const encoder 	= new TextEncoder();
+	const text 		= encoder.encode(stringToSave + "\n");
+	const savePath	= join(Deno.cwd(), 'logs', `${pathToSave}.log`);
 
-	public onGeneric (text : string) {
-		Logger.general(text);
-	}
+	//Make sure the path exists
+	ensureDirSync(parse(savePath).dir);
 
-    //-------------------------------------------------
-    // Main methods
-	//-------------------------------------------------
+	//Write to file
+	const file = Deno.openSync(savePath, { write:true, create:true, append:true });
+	await Deno.writeAll(file, text);
+	Deno.close(file.rid);
+}
 
-	public static general (text : string) {
-		Logger.save(`${timestamp()}asds`, `${timestamp(undefined, true)} (date) - ${text}`);
-	}
+// -------------------------------------------------
+// Export
+// -------------------------------------------------
 
-    //-------------------------------------------------
-    // Helper methods
-	//-------------------------------------------------
+ export default {
+	general: async (text : string) => {
+		await save(`${timestamp()}`, `${timestamp(undefined, true)} (date) - ${text}`);
+	},
 
-	private static async save (pathToSave : string, stringToSave : string) {
-		const encoder 	= new TextEncoder();
-		const text 		= encoder.encode(stringToSave + "\n");
-		const savePath	= join(Deno.cwd(), 'logs', `${pathToSave}.log`);
-
-		//Make sure the path exists
-		ensureDirSync(parse(savePath).dir);
-
-		//Write to file
-		const file = Deno.openSync(savePath, { write:true, create:true, append:true });
-		await Deno.writeAll(file, text);
-		Deno.close(file.rid);
+	log: async (pathToSave : string, stringToSave : string) => {
+		await save(pathToSave, stringToSave);
 	}
 }

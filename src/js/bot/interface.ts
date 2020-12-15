@@ -1,10 +1,10 @@
 // Interfaces
 import { AccountInterface } from "../binance/interfaces/account.ts";
 import { ExchangeInfoInterface } from "../binance/interfaces/general.ts";
-import { AvgPriceInterface, OrderBookInterface } from "../binance/interfaces/market.ts";
+import { AvgPriceInterface } from "../binance/interfaces/market.ts";
 import { OpenOrderInterface } from "../binance/interfaces/trades.ts";
 
-export default interface iOptions {
+export default interface OptionsInterface {
 	pair : [
 		string,
 		string,
@@ -20,9 +20,11 @@ export default interface iOptions {
 }
 
 export interface ApplicationInterface {
-	config: 	iOptions;
+	config: 	OptionsInterface;
 	account: 	AccountInterface;
 	info: 		ExchangeInfoInterface;
 	openOrders: OpenOrderInterface[];
 	avgPrice: 	AvgPriceInterface;
+	balance: 	Record<string, {free: string, locked: string}>;
+	initialSum:	number;
 }

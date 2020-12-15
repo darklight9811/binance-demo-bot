@@ -1,7 +1,7 @@
 /*
  * Format the timestamp to a readable state
  */
-export function timestamp (value? : Date, stamptime : boolean = false) : string {
+export function timestamp (value? : Date, stamptime = false) : string {
 	//Save the now date
 	if (!value) value = new Date();
 
