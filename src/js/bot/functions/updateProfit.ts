@@ -7,12 +7,14 @@ import { log } from "../../helpers/console.ts";
 // properties
 let sum	= 0;
 
-export default function updateProfit({config, initialSum, balance}: ApplicationInterface) {
+export default function updateProfit({config, initialSum, balance, avgPrice}: ApplicationInterface) {
 	const [ firstPair, secondPair ] = config.pair;
 
 	// calculate sums
-	sum 			= parseFloat(balance[secondPair].locked) + parseFloat(balance[secondPair].free);
-	const profit 	= sum - initialSum;
+	const firstPairSum 	= (parseFloat(balance[firstPair].locked) + parseFloat(balance[firstPair].free)) * parseFloat(avgPrice.price);
+	const secondPairSum = parseFloat(balance[secondPair].locked) + parseFloat(balance[secondPair].free);
+	sum 				= firstPairSum + secondPairSum;
+	const profit 		= parseFloat((sum - initialSum).toFixed(4));
 
 	// display profit
 	if (profit < 0)

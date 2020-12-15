@@ -19,6 +19,7 @@ import { order } 		from "../binance/trades.ts";
 // Helpers
 import { format } 				from "../helpers/date.ts";
 import { clear, print, log } 	from "../helpers/console.ts";
+import { avgPrice } from "../binance/market.ts";
 
 // Properties
 const properties = {
@@ -92,8 +93,11 @@ export async function run (_options : OptionsInterface) {
 	}
 
 	// Calculate initial sum
-	const b 				= (await wallet.balance(pair))[pair[1]];
-	properties.initialSum 	= parseFloat(b.free) + parseFloat(b.locked);
+	const balance			= (await wallet.balance(pair));
+	const avgPriceValue		= await avgPrice(pair[0] + pair[1]);
+	const firstPairSum 		= (parseFloat(balance[pair[0]].locked) + parseFloat(balance[pair[0]].free)) * parseFloat(avgPriceValue.price);
+	const secondPairSum 	= parseFloat(balance[pair[1]].locked) + parseFloat(balance[pair[1]].free);
+	properties.initialSum 	= firstPairSum + secondPairSum;
 
 	// Start bot
 	console.log("Starting bot");
