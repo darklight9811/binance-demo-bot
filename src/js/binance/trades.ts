@@ -2,7 +2,7 @@
 import request from "./signedRequest.ts";
 
 // Interfaces
-import { NewTradeInterface } from "./interfaces/trades.ts";
+import { NewTradeInterface, OpenOrderInterface } from "./interfaces/trades.ts";
 import { iAggregateTrades } from "./interfaces/market.ts";
 
 /**
@@ -117,7 +117,7 @@ export async function cancelAll (symbol : string) : Promise<Record<string, unkno
 * @param {string} symbol?
 * @returns {Promise<Record<string, unknown>>}
 */
-export async function openOrders (symbol? : string) : Promise<Record<string, unknown>[]> {
+export async function openOrders (symbol? : string) : Promise<OpenOrderInterface[]> {
    return await request.get(`openOrders${symbol ? `?symbol=${symbol}`:""}`);
 }
 

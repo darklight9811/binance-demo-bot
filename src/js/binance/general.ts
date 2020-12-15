@@ -1,3 +1,5 @@
+// deno-lint-ignore-file
+
 // Helpers
 import request from "../helpers/request.ts";
 
@@ -43,7 +45,7 @@ export async function exchangeInfo <T extends string | undefined = undefined> (s
 	const response = await request("exchangeInfo") as {symbols: ExchangeInfoInterface[]};
 
 	if (symbol)
-		return response.symbols.find((value) => value.symbol === symbol) as ExchangeInfoInterface;
+		return response.symbols.find((value) => value.symbol === symbol) as any;
 	else
-		return response.symbols;
+		return response.symbols as any;
 }

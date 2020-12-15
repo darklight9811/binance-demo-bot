@@ -1,11 +1,15 @@
 // Interfaces
 import iOptions from "./interface.ts";
+import { AccountInterface } from "../binance/interfaces/account.ts";
+import { ExchangeInfoInterface } from "../binance/interfaces/general.ts";
+import { OpenOrderInterface } from "../binance/interfaces/trades.ts";
+import { AvgPriceInterface } from "../binance/interfaces/market.ts";
 
 // Binance
 import { info } 				from "../binance/account.ts";
 import * as wallet 				from "../binance/wallet.ts";
 import { exchangeInfo } 		from "../binance/general.ts";
-import { openOrders, cancel } 	from "../binance/trades.ts";
+import { openOrders, cancel, order } 	from "../binance/trades.ts";
 import { avgPrice } 			from "../binance/market.ts";
 
 // Helpers
@@ -13,21 +17,24 @@ import { format } from "../helpers/date.ts";
 import Logger from "../helpers/log.ts";
 
 // Properties
-let fee			: number;
-let options 	: iOptions;
-let canRun 					= true;
-let cacheConsole: string[] 	= [];
-const balance 				= {} as Record<string, string>;
+let canRun 			= true;
+let cacheConsole 	= [] as string[];
+const balance 		= {} as Record<string, string>;
+let fee				: number;
+let options 		: iOptions;
+let account			: AccountInterface;
+let pairInfo		: ExchangeInfoInterface;
+let orders			: OpenOrderInterface[];
+let avgPriceValue	: AvgPriceInterface;
 
 // Display properties
 let totalOrdersClosed = 0;
 
 // Methods
 async function updateBalance () {
-	const account					= await info();
 	const pairs 					= await wallet.balance(options.pair);
 	const [ firstPair, secondPair ] = options.pair;
-	const price						= await avgPrice(firstPair + secondPair);
+	avgPriceValue					= await avgPrice(firstPair + secondPair);
 
 	fee = account.makerCommission + account.buyerCommission;
 
@@ -37,12 +44,12 @@ async function updateBalance () {
 
 	// display balance
 	cacheConsole.push(`Your trading fee is current ${fee}%\n`);
-	cacheConsole.push(`\x1b[32m${firstPair}\x1b[37m is worth ${price.price} ${secondPair}%`);
-	cacheConsole.push(`You have ${balance[firstPair]} \x1b[32m${firstPair}\x1b[37m (worth: $${parseFloat(price.price) * parseFloat(balance[firstPair])} \x1b[32m${secondPair}\x1b[37m)\n`);
+	cacheConsole.push(`\x1b[32m${firstPair}\x1b[37m is worth around ${avgPriceValue.price} ${secondPair}%`);
+	cacheConsole.push(`You have ${balance[firstPair]} \x1b[32m${firstPair}\x1b[37m (worth: $${parseFloat(avgPriceValue.price) * parseFloat(balance[firstPair])} \x1b[32m${secondPair}\x1b[37m)\n`);
 }
 
 async function updateOrders () {
-	const orders = await openOrders(options.pair[0] + options.pair[1]);
+	orders = await openOrders(options.pair[0] + options.pair[1]);
 
 	if (orders.length === 0) {
 		cacheConsole.push("No open orders at the moment");
@@ -54,13 +61,13 @@ async function updateOrders () {
 		if (options.closeOrdersTime) {
 			for (let i = 0; i < orders.length; i++) {
 				const order = orders[i];
-				const time 	= new Date(order.updateTime as string);
+				const time 	= new Date(order.updateTime);
 				const limit = time.getTime() + (options.closeOrdersTime * 60 * 60 * 1000);
 	
 				// close old order
 				if (limit < (new Date()).getTime()) {
 					Logger.general(`closing order {${order.orderId}}`);
-					await cancel(options.pair[0] + options.pair[1], order.orderId as number);
+					await cancel(options.pair[0] + options.pair[1], order.orderId);
 					roundCloseOrder++;
 				}
 			}
@@ -89,6 +96,26 @@ async function cycle () {
 	cacheConsole.forEach(i => console.log(i));
 	cacheConsole = [];
 
+	// run algorithm
+	const newOrders = options.algorithm({
+		config: 	options,
+		account: 	account,
+		info: 		pairInfo,
+		openOrders: orders,
+		avgPrice: 	avgPriceValue,
+	});
+
+	if (newOrders) {
+		const prepareOrders = Array.isArray(newOrders) ? newOrders:[newOrders];
+
+		// send orders to binance
+		for (let i = 0; i < prepareOrders.length; i++) {
+			await order(options.pair[0] + options.pair[1], "BUY", "LIMIT", {
+				...prepareOrders[i],
+			});
+		}
+	}
+
 	// Renew cycle
 	if (canRun)
 		// Convert miliseconds refreshRate to seconds
@@ -100,15 +127,16 @@ async function cycle () {
 // Export methods
 export async function run (_options : iOptions) {
 	// Validate user
-	if (!(await info()).canTrade) {
+	account = await info();
+	if (!account.canTrade) {
 		console.warn("Credentials are not valid");
 		return;
 	}
 
 	// Validate pair
-	const { pair } 			= _options;
-	const _pairInfo 		= await exchangeInfo(pair[0] + pair[1]);
-	if (!_pairInfo || !_pairInfo.isSpotTradingAllowed) {
+	const { pair } 	= _options;
+	pairInfo 		= await exchangeInfo(pair[0] + pair[1]);
+	if (!pairInfo || !pairInfo.isSpotTradingAllowed) {
 		console.warn(`${pair[1] + pair[0]} pair is not valid`);
 	}
 

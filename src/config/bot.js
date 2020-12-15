@@ -1,3 +1,6 @@
+// Algorithms
+import main from "../js/algorithms/main/index.ts";
+
 export default {
 	pair: [
 		// Profit pair
@@ -6,8 +9,8 @@ export default {
 		"USDT"
 	],
 
-	// display currency
-	currency: "BRL",
+	// algorithm to calculate orders
+	algorithm: main,
 
 	// Strategy,
 	strategy: "long", // [long, short]
@@ -20,10 +23,4 @@ export default {
 
 	// Take profit
 	profit: 0.15,
-
-	// Extra order
-	order: {
-		extra:1,
-		count:2,
-	}
 };

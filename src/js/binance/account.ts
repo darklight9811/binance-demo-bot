@@ -25,6 +25,18 @@ export async function info () : Promise<AccountInterface> {
 	if (response.buyerCommission) 	response.buyerCommission 	/= 10000;
 	if (response.sellerComission) 	response.sellerComission 	/= 10000;
 
+	// remove empty balances
+	const balances = [];
+
+	for (let i = 0; i < response.balances.length; i++) {
+		const balance = response.balances[i];
+
+		if (balance.free !== "0.00000000" || balance.locked !== "0.00000000")
+			balances.push(balance);
+	}
+
+	response.balances = balances;
+
 	return response;
 }
 
