@@ -20,14 +20,14 @@ import { iAggregateTrades } from "./interfaces/market.ts";
 * @param {NewTradeInterface} options?
 * @returns {Promise<Record<string, unknown>>}
 */
-export async function order (symbol : string, side : string, type : string, options? : NewTradeInterface) : Promise<Record<string, unknown>> {
+export async function order (symbol : string, options? : NewTradeInterface) : Promise<Record<string, unknown>> {
 	let getoptions = "";
 
 	for (const key in options) {
 		getoptions += `&${key}=${options[key as keyof NewTradeInterface]}`;
 	}
 
-   return await request.post(`order?symbol=${symbol}&side=${side}&type=${type}${getoptions}`);
+   return await request.post(`order?symbol=${symbol}${getoptions}`);
 }
 
 /**

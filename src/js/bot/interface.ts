@@ -27,4 +27,5 @@ export interface ApplicationInterface {
 	avgPrice: 	AvgPriceInterface;
 	balance: 	Record<string, {free: string, locked: string}>;
 	initialSum:	number;
+	profit:		number;
 }

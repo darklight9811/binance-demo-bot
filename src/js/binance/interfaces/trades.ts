@@ -1,4 +1,6 @@
 export interface NewTradeInterface {
+	side: string;
+	type: string;
 	timeInForce? : string,
 	quantity? : number | string,
 	quoteOrderQty? : number,

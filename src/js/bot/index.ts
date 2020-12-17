@@ -30,6 +30,7 @@ const properties = {
 	avgPrice:	{} as AvgPriceInterface,
 	balance:	{} as Record<string, {free: string, locked: string}>,
 	initialSum:	0,
+	profit: 	0,
 };
 let canRun 			= true;
 let cycles			= 0;
@@ -48,7 +49,7 @@ async function cycle () {
 	properties.openOrders = await updateOrders(properties);
 
 	// Update profit count
-	await updateProfit(properties);
+	properties.profit = await updateProfit(properties);
 
 	// update console
 	console.clear();
@@ -64,7 +65,7 @@ async function cycle () {
 
 		// send orders to binance
 		for (let i = 0; i < prepareOrders.length; i++) {
-			await order(properties.config.pair[0] + properties.config.pair[1], "BUY", "LIMIT", {
+			await order(properties.config.pair[0] + properties.config.pair[1], {
 				...prepareOrders[i],
 			});
 		}
