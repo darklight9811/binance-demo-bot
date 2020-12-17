@@ -23,4 +23,7 @@ export default {
 
 	// The quantity the bot is allowed to use from the account balance
 	maxBalanceUsage: 0.005,
+
+	// Properties related to main algorithm
+	scope: "1d"
 };

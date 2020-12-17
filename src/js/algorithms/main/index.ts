@@ -3,7 +3,6 @@ import { ApplicationInterface } from "../../bot/interface.ts";
 
 // Methods
 import { candlesticks } from "../../binance/market.ts";
-import { balance } 		from "../../binance/wallet.ts";
 
 // Helpers
 import Logger 			from "../../helpers/log.ts";
@@ -15,7 +14,7 @@ export default async function (request: ApplicationInterface) {
 	const curr 		= request.avgPrice.price;
 	const fee		= request.account.makerCommission + request.account.buyerCommission;
 	const pair 		= request.config.pair[0] + request.config.pair[1];
-	const candles 	= await candlesticks(pair, "1d");
+	const candles 	= await candlesticks(pair, (request.config.scope as string) || "1w");
 	const minValue	= parseFloat(request.info.filters.find(item => item.filterType === "MIN_NOTIONAL")?.minNotional as string || "0");
 	let ATL: number = Number.POSITIVE_INFINITY;
 	let ATH: number = Number.NEGATIVE_INFINITY;
@@ -35,27 +34,29 @@ export default async function (request: ApplicationInterface) {
 	}
 
 	// calculate avg
-	AVG 		/= candles.length;
-	const margin = AVG * request.config.profit + fee * (AVG * request.config.profit);
+	AVG 			   /= candles.length;
+	ATL			 		= (ATL + AVG) / 2;
+	AVG			 		= (ATH + AVG) / 2;
+	const upperMargin 	= AVG * (request.config.profit / 100) + fee * (AVG * (request.config.profit / 100));
+	const lowerMargin 	= AVG * (request.config.profit / 100) + fee * (AVG * (request.config.profit / 100));
 
 	// visual feedback
 	console.log(`\x1b[32m${pair}\x1b[37m info:`);
 	console.log(`ATL: ${ATL}`);
 	console.log(`ATH: ${ATH}`);
 	console.log(`AVG: ${AVG}`);
-	console.log(`MARGIN: ${margin}`);
 
 	// buy if below average
-	if (AVG - margin > parseFloat(curr)) {
+	if ((ATL + AVG) / 2 - lowerMargin > parseFloat(curr)) {
 		// check balance
 		if (parseFloat(request.balance[request.config.pair[1]].free) < minValue) {
-			console.log(`\nCurrent value of ${parseFloat(curr)} is below the buy line that is ${AVG - margin}, but you do not have any funds`);
+			console.log(`\nCurrent value of ${parseFloat(curr)} is below the buy line that is ${(ATL + AVG) / 2 - lowerMargin}, but you do not have any funds`);
 		}
 		else {
 			const quantity = clamp(parseFloat(request.balance[request.config.pair[1]].free), minValue, request.config.maxBalanceUsage);
 
 			// logs
-			console.log(`\nCurrent value of ${parseFloat(curr)} is below the buy line that is ${AVG - margin}, buying`);
+			console.log(`\nCurrent value of ${parseFloat(curr)} is below the buy line that is ${(ATL + AVG) / 2 - lowerMargin}, buying`);
 			Logger.general(`${pair} [${timestamp(undefined, true)}] Buying with price of ${curr}`);
 	
 			return {
@@ -67,16 +68,16 @@ export default async function (request: ApplicationInterface) {
 		}
 	}
 	// sell if above average
-	else if (AVG + margin < parseFloat(curr)) {
+	else if ((ATH + AVG) / 2 + upperMargin < parseFloat(curr)) {
 		// check balance
 		if (parseFloat(request.balance[request.config.pair[0]].free) < minValue) {
-			console.log(`\nCurrent value of ${parseFloat(curr)} is above the sell line that is ${AVG + margin}, but you do not have any funds`);
+			console.log(`\nCurrent value of ${parseFloat(curr)} is above the sell line that is ${(ATH + AVG) / 2 + upperMargin}, but you do not have any funds`);
 		}
 		else {
 			const quantity = clamp(parseFloat(request.balance[request.config.pair[0]].free), minValue, request.config.maxBalanceUsage);
 
 			// logs
-			console.log(`\nCurrent value of ${parseFloat(curr)} is above the sell line that is ${AVG + margin}, selling`);
+			console.log(`\nCurrent value of ${parseFloat(curr)} is above the sell line that is ${(ATH + AVG) / 2 + upperMargin}, selling`);
 			Logger.general(`${pair} [${timestamp(undefined, true)}] Selling with price of ${curr}`);
 
 			return {

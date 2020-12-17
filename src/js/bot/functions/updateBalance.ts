@@ -27,7 +27,7 @@ export default async function updateBalance ({config, account} : ApplicationInte
 	log(`You have ${parseFloat(balance[firstPair].free) + parseFloat(balance[firstPair].locked)} \x1b[32m${firstPair}\x1b[37m (worth around: $${(parseFloat(avgPriceValue.price) * (parseFloat(balance[firstPair].free) + parseFloat(balance[firstPair].locked))).toFixed(3)} \x1b[32m${secondPair}\x1b[37m)`);
 	
 	// display second coin balance
-	log(`You have ${parseFloat(balance[secondPair].free) + parseFloat(balance[secondPair].locked)} \x1b[32m${secondPair}\x1b[37m\n`);
+	log(`You have ${(parseFloat(avgPriceValue.price) * (parseFloat(balance[firstPair].free) + parseFloat(balance[firstPair].locked)) + parseFloat(balance[secondPair].free) + parseFloat(balance[secondPair].locked)).toFixed(3)} \x1b[32m${secondPair}\x1b[37m\n`);
 
 	return {balance, avgPrice: avgPriceValue};
 }
