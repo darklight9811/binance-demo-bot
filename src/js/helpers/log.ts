@@ -29,7 +29,7 @@ async function save (pathToSave : string, stringToSave : string) {
 
  export default {
 	general: async (text : string) => {
-		await save(`${timestamp()}`, `${timestamp(undefined, true)} (date) - ${text}`);
+		await save(`${timestamp()}`, text);
 	},
 
 	log: async (pathToSave : string, stringToSave : string) => {

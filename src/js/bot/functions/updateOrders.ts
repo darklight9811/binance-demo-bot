@@ -5,8 +5,9 @@ import { openOrders, cancel } 	from "../../binance/trades.ts";
 import { ApplicationInterface } from "../interface.ts";
 
 // Helpers
-import { log } from "../../helpers/console.ts";
-import Logger from "../../helpers/log.ts";
+import { log } 			from "../../helpers/console.ts";
+import Logger 			from "../../helpers/log.ts";
+import { timestamp } 	from "../../helpers/string.ts";
 
 // Properties
 let totalOrdersClosed = 0;
@@ -29,7 +30,7 @@ export default async function updateOrders ({config}: ApplicationInterface) {
 	
 				// close old order
 				if (limit < (new Date()).getTime()) {
-					Logger.general(`closing order {${order.orderId}}`);
+					Logger.general(`${config.pair[0] + config.pair[1]} [${timestamp(undefined, true)}] closing order {${order.orderId}}`);
 					const response = await cancel(config.pair[0] + config.pair[1], order.orderId);
 					roundCloseOrder++;
 				}

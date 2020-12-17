@@ -10,10 +10,7 @@ export default {
 	],
 
 	// algorithm to calculate orders
-	algorithm: main,
-
-	// Strategy,
-	strategy: "long", // [long, short]
+	strategy: main,
 
 	// Close order if it's been open more than x hours
 	closeOrdersTime: 4,
@@ -22,5 +19,8 @@ export default {
 	refreshRate: 2,
 
 	// Take profit
-	profit: 0.15,
+	profit: 1,
+
+	// The quantity the bot is allowed to use from the account balance
+	maxBalanceUsage: 0.005,
 };

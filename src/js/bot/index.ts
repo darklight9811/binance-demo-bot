@@ -32,10 +32,12 @@ const properties = {
 	initialSum:	0,
 };
 let canRun 			= true;
+let cycles			= 0;
 
 async function cycle () {
 	// Update screen with latest time
-	log(`Latest update at ${format(new Date())}\n`);
+	cycles++;
+	log(`Latest update at ${format(new Date())} (ran ${cycles} cycles)\n`);
 
 	// Check if we can continue trading
 	const {balance, avgPrice} = await updateBalance(properties);
@@ -55,7 +57,7 @@ async function cycle () {
 	console.log('');
 
 	// run algorithm
-	const newOrders = await properties.config.algorithm(properties);
+	const newOrders = await properties.config.strategy(properties);
 
 	if (newOrders) {
 		const prepareOrders = Array.isArray(newOrders) ? newOrders:[newOrders];

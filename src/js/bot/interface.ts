@@ -9,11 +9,11 @@ export default interface OptionsInterface {
 		string,
 		string,
 	],
-	algorithm		: (request: ApplicationInterface) => unknown[] | unknown | undefined,
-	strategy		: string,
+	strategy		: (request: ApplicationInterface) => unknown[] | unknown | undefined,
 	refreshRate 	: number,
 	profit 			: number,
 	closeOrdersTime?: number,
+	maxBalanceUsage	: number,
 	
 	// extra configuration
 	[key: string]: unknown,

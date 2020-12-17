@@ -18,7 +18,7 @@ export default function updateProfit({config, initialSum, balance, avgPrice}: Ap
 
 	// display profit
 	if (profit < 0)
-		log(`Your current profit is \x1b[31m${profit}\x1b[37m`);
+		log(`Your current profit is \x1b[31m${profit}\x1b[37m (\x1b[31m${((sum - initialSum) / initialSum).toFixed(2)}%\x1b[37m)`);
 	else
-		log(`Your current profit is \x1b[32m${profit}\x1b[37m`);
+		log(`Your current profit is \x1b[32m${profit}\x1b[37m (\x1b[32m${((sum - initialSum) / initialSum).toFixed(2)}%\x1b[37m)`);
 }

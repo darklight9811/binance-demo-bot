@@ -20,7 +20,7 @@ export interface ExchangeInfoInterface {
 	isSpotTradingAllowed: boolean;
 	isMarginTradingAllowed: boolean;
 
-	filter: {
+	filters: {
 		filterType: string;
 		[key: string]: string | number;
 	}[];
